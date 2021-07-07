@@ -42,5 +42,8 @@ class crawler extends Command
         $response = Http::get($url);
         $content = $response->body();
         $result = mb_convert_encoding($content,"utf-8","big5");
+        $htmlOneLine = preg_replace("/\r|\n|\t/","",$result);
+        preg_match("/<table id=\"oMainTable\" class=\"t01\" border=\"0\" cellspacing=\"1\" cellpadding=\"1\">(.*)<\/table>/iU",$htmlOneLine,$content);
+        dd($content);
     }
 }
