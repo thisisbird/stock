@@ -40,10 +40,13 @@ class crawler extends Command
     {
         $url = "https://fubon-ebrokerdj.fbs.com.tw/z/zg/zgb/zgb0.djhtm?a=1520&b=1520";
         $response = Http::get($url);
-        $content = $response->body();
-        $result = mb_convert_encoding($content,"utf-8","big5");
-        $htmlOneLine = preg_replace("/\r|\n|\t/","",$result);
-        preg_match("/<table id=\"oMainTable\" class=\"t01\" border=\"0\" cellspacing=\"1\" cellpadding=\"1\">(.*)<\/table>/iU",$htmlOneLine,$content);
-        dd($content);
+        $body = $response->body();
+        $file = mb_convert_encoding($body,"utf-8","big5");
+        //$htmlOneLine = preg_replace("/\r|\n|\t/","",$result);
+        //preg_match("/<table id=\"oMainTable\" class=\"t01\" border=\"0\" cellspacing=\"1\" cellpadding=\"1\">(.*)<\/table>/iU",$htmlOneLine,$body);
+        $doc = new \DOMDocument();
+        $doc->loadHTMLFile($file);
+        $xpath = new \DOMXpath($doc);
+        dd($xpath);
     }
 }
