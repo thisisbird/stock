@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
-
+use App\Http\Controllers\CrawlerController;
 class crawler extends Command
 {
     /**
@@ -38,15 +38,6 @@ class crawler extends Command
      */
     public function handle()
     {
-        $url = "https://fubon-ebrokerdj.fbs.com.tw/z/zg/zgb/zgb0.djhtm?a=1520&b=1520";
-        $response = Http::get($url);
-        $body = $response->body();
-        $file = mb_convert_encoding($body,"utf-8","big5");
-        //$htmlOneLine = preg_replace("/\r|\n|\t/","",$result);
-        //preg_match("/<table id=\"oMainTable\" class=\"t01\" border=\"0\" cellspacing=\"1\" cellpadding=\"1\">(.*)<\/table>/iU",$htmlOneLine,$body);
-        $doc = new \DOMDocument();
-        $doc->loadHTMLFile($file);
-        $xpath = new \DOMXpath($doc);
-        dd($xpath);
+        CrawlerController::crawler();
     }
 }
