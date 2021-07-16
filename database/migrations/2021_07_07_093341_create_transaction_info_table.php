@@ -17,6 +17,8 @@ class CreateTransactionInfoTable extends Migration
             $table->id();
             $table->string('company_code', 20)->comment('券商代碼');
             $table->string('company_name', 20)->comment('券商名稱');
+            $table->string('sub_company_code', 20)->nullable()->comment('券商分行代碼');
+            $table->string('sub_company_name', 20)->nullable()->comment('券商分行名稱');
             $table->string('stock_code', 20)->comment('股票代碼');
             $table->string('stock_name', 20)->comment('股票名稱');
             $table->date('date')->comment('交易日期');

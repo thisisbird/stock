@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Http;
 
 class TransactionInfo extends Model
 {
@@ -15,7 +16,7 @@ class TransactionInfo extends Model
             "8890"=>"大和國泰",
             "6460"=>"大昌",
             "5050"=>"大展",
-            "8770"=>"大鼎(停)",
+            // "8770"=>"大鼎(停)",
             "5260"=>"大慶",
             "6160"=>"中國信託",
             "8520"=>"中農",
@@ -99,12 +100,13 @@ class TransactionInfo extends Model
             "5460"=>"寶盛"
         ];
 
-
     protected $table = 'transaction_info';
 
     protected $fillable = [
         'company_code',
         'company_name',
+        'sub_company_code',
+        'sub_company_name',
         'stock_code',
         'stock_name',
         'date',
@@ -116,4 +118,37 @@ class TransactionInfo extends Model
         'updated_at',
         'deleted_at'
     ];
+
+    static function getSubCompany()
+    {
+        $company = self::COMPANY;
+        $result = [];
+        $response = Http::get("https://fubon-ebrokerdj.fbs.com.tw/z/js/zbrokerjs.djjs");
+        $body = $response->body();
+        $file = mb_convert_encoding($body, "utf-8", "big5");
+        $all = preg_split("/\n/",$file);
+        $str = trim(str_replace("'",'',str_replace('var g_BrokerList =','',$all[0])));
+        $arr = explode(';',$str);
+        foreach($company as $key=>$val)
+        {
+            foreach($arr as $arr1)
+            {
+                if(!empty($arr1))
+                {
+                    $arr2 = explode('!',$arr1);
+                    $compare = explode(',',$arr2[0]);
+                    if($key == $compare[0])
+                    {
+                        foreach($arr2 as $arr3)
+                        {
+                            $arr4 = explode(',',$arr3);
+                            $result[$key][$arr4[0]] = $arr4[1];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
 }
