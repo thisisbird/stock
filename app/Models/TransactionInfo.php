@@ -123,7 +123,8 @@ class TransactionInfo extends Model
     {
         $company = self::COMPANY;
         $result = [];
-        $response = Http::get("https://fubon-ebrokerdj.fbs.com.tw/z/js/zbrokerjs.djjs");
+        //$response = Http::get("https://fubon-ebrokerdj.fbs.com.tw/z/js/zbrokerjs.djjs");
+        $response = Http::get("http://210.66.194.151/z/js/zbrokerjs.djjs");
         $body = $response->body();
         $file = mb_convert_encoding($body, "utf-8", "big5");
         $all = preg_split("/\n/",$file);
