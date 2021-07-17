@@ -38,6 +38,7 @@ class crawler extends Command
      */
     public function handle()
     {
+        CrawlerController::crawlerTotal();
         CrawlerController::crawler();
     }
 }

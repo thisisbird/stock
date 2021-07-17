@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use App\Models\TransactionInfo;
+use App\Models\TransactionTotalInfo;
 use Illuminate\Http\Client\RequestException;
 
 class CrawlerController extends Controller
 {
     public function index()
     {
-        self::crawler();
+        return self::crawlerTotal();
     }
 
     public static function crawler()
@@ -110,7 +111,69 @@ class CrawlerController extends Controller
             abort(500, $ex->getMessage());
         }
     }
+    public static function crawlerTotal()
+    {
+        try{
+            
+            $company = TransactionInfo::COMPANY;
+            $url = "https://fubon-ebrokerdj.fbs.com.tw/Z/ZG/ZGB/ZGB.djhtm";
+            $response = Http::get($url);
+            $body = $response->body();
+            $file = mb_convert_encoding($body, "utf-8", "big5");
+            $date = self::findMid("資料日期：","</div></td></tr>",$file);
+            $date = date('Y-m-d',strtotime($date));
+            $count = TransactionTotalInfo::where('date',$date)->count();
+            if($count > 0)
+            {
+                return '今日資料已寫入!';
+            }
 
+            $all = preg_split("/zgb0.djhtm/i", $file);
+            unset($all[0]);
+
+            $url = null;
+            $response = null;
+            $body = null;
+            $all_data = [];
+            foreach ($all as $info) {
+                $info = preg_split("/\r\n/i", $info);
+                foreach ($info as $i=> $str) {
+                    if($i == 0){
+                        $data['date'] = $date;
+                        $data['company_code'] = self::findMid("?a=","&b=",$str);
+                        $data['company_name'] = $company[$data['company_code']] ?? '';
+                        $data['sub_company_code'] = self::findMid("&b=",'">',$str);
+                        $data['sub_company_name'] = self::findMid('">',"</a></td>",$str);
+                        continue;
+                    }
+                    if($i == 1){
+                        $find = self::findMid("nowrap>", "</td>", $str);
+                        $data['buy'] = str_replace(',','',$find);
+                        continue;
+                    }
+                    if($i == 2){
+                        $find = self::findMid("nowrap>", "</td>", $str);
+                        $data['sell'] = str_replace(',','',$find);
+                        continue;
+                    }
+                    if($i == 3){
+                        $find = self::findMid("nowrap>", "</td>", $str);
+                        $data['diff'] = str_replace(',','',$find);
+                        $data['type'] = $data['diff'] > 0?'buy':'sell';
+                        continue;
+                    }
+                    
+                }
+                $all_data[] = $data;
+            }
+            TransactionTotalInfo::insert($all_data);
+            return '寫入成功';
+        }
+        catch (RequestException $ex)
+        {
+            abort(500, $ex->getMessage());
+        }
+    }
     /**
      * 給頭尾找中間的值
      */
