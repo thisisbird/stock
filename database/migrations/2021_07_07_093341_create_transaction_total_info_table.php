@@ -27,7 +27,7 @@ class CreateTransactionTotalInfoTable extends Migration
             $table->datetime('created_at')->useCurrent();
             $table->datetime('updated_at')->nullable();
             $table->datetime('deleted_at')->nullable();
-            $table->index(['company_code','company_name','date','type'],'index');
+            $table->index(['company_code','sub_company_code','date','type'],'index');
         });
     }
 

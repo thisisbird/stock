@@ -29,7 +29,7 @@ class CreateTransactionInfoTable extends Migration
             $table->datetime('created_at')->useCurrent();
             $table->datetime('updated_at')->nullable();
             $table->datetime('deleted_at')->nullable();
-            $table->index(['company_code','company_name','stock_code','stock_name','date','type'],'index');
+            $table->index(['company_code','sub_company_code','stock_code','date','type'],'index');
         });
     }
 
