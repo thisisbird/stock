@@ -6,13 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use App\Models\TransactionInfo;
 use App\Models\TransactionTotalInfo;
+use App\Models\StockInfo;
 use Illuminate\Http\Client\RequestException;
 
 class CrawlerController extends Controller
 {
     public function index()
     {
+        return self::stockOHLCV(20210714);
         return self::crawlerTotal();
+        return self::crawler();
     }
 
     public static function crawler()
@@ -110,6 +113,70 @@ class CrawlerController extends Controller
                     }
                     sleep(5);
                 }
+            }
+        }
+        catch (RequestException $ex)
+        {
+            abort(500, $ex->getMessage());
+        }
+    }
+    public static function stockOHLCV($date)
+    {
+        try{
+            $count = StockInfo::where('date',$date)->count();
+            if($count > 0)
+            {
+                return '今日資料已寫入!';
+            }
+
+            $url = "https://www.twse.com.tw/exchangeReport/MI_INDEX?response=html&date=".$date."&type=ALLBUT0999";
+            $response = Http::get($url);
+            $body = $response->body();
+            $all = preg_split("/<table>/i", $body);
+            
+            $url = null;
+            $response = null;
+            $body = null;
+            $all_data = [];
+            $col = ['stock_code','stock_name','vol2','vol','price','open','high','low','close','type','diff'];
+            //證券代號	證券名稱	成交股數	成交筆數	成交金額	開盤價	最高價	最低價	收盤價	漲跌(+/-)	漲跌價差	最後揭示買價	最後揭示買量	最後揭示賣價	最後揭示賣量	本益比
+            foreach ($all as $info) {
+                $find = self::findMid("每日收盤行情","不含權證、牛熊證",$info);
+
+                if(!$find){
+                    continue;
+                }
+                $info = preg_split("/<tbody>/i", $info);
+                $info = preg_split("/<\/tr>/i", $info[1]);
+                $all_data = [];
+                foreach ($info as $i=> $str) {
+                    $stock_info = preg_split("/d>\n/i", $str);
+                    
+                    $type = 1;//預設漲
+                    foreach ($stock_info as $i => $info) {
+                        if(@$col[$i] == null) continue;
+                        $new_info = self::findMid("<td>","</t",$info);
+                        $new_info = str_replace(',','',$new_info);
+                        if($col[$i] == 'type'){
+                            $new_info = self::findMid(">","</p>",$new_info);
+                            $type = $new_info == '+' ? 1 : -1;
+                        }
+                        if($col[$i] == 'diff'){
+                            $new_info = $new_info * $type;
+                        }
+                        $data[$col[$i]] = $new_info == '--' ? 0 : $new_info;
+                        
+                    }
+                    if($data['stock_code'] == '') continue;
+                    $data['date'] = $date;
+                    $all_data[] = $data;
+                }
+            }
+            if(count($all_data) > 0){
+                StockInfo::insert($all_data);
+                return '寫入成功';
+            }else{
+                return '今日無資料';
             }
         }
         catch (RequestException $ex)
