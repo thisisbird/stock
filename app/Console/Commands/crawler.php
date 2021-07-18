@@ -39,6 +39,7 @@ class crawler extends Command
     public function handle()
     {
         CrawlerController::crawlerTotal();
+        sleep(3);
         CrawlerController::crawler();
     }
 }

@@ -18,15 +18,21 @@ class CrawlerController extends Controller
     public static function crawler()
     {
         try{
-            $today = date('Y-m-d');
-            $count = TransactionInfo::where('date',$today)->count();
+            $url = "https://fubon-ebrokerdj.fbs.com.tw/Z/ZG/ZGB/ZGB.djhtm";
+            $response = Http::get($url);
+            $body = $response->body();
+            $file = mb_convert_encoding($body, "utf-8", "big5");
+            $date = self::findMid("資料日期：","</div></td></tr>",$file);
+            $date = date('Y-m-d',strtotime($date));
+            $count = TransactionInfo::where('date',$date)->count();
             if($count > 0)
             {
                 return '今日資料已寫入!';
             }
+            sleep(3);
             $company = TransactionInfo::COMPANY;
             $sub_company = TransactionInfo::getSubCompany();
-            sleep(2);
+            sleep(3);
             foreach($company as $key=>$val)
             {
                 foreach($sub_company[$key] as $sub_key=>$sub_val)
@@ -95,14 +101,14 @@ class CrawlerController extends Controller
                         $db->sub_company_name = $sub_val;
                         $db->stock_code = $data['code'];
                         $db->stock_name = $data['name'];
-                        $db->date = $today;
+                        $db->date = $date;
                         $db->type = $data['data3'] > 0?'buy':'sell';
                         $db->buy = $data['data1'];
                         $db->sell = $data['data2'];
                         $db->diff = $data['data3'];
                         $db->save();
                     }
-                    sleep(2);
+                    sleep(5);
                 }
             }
         }
@@ -114,7 +120,7 @@ class CrawlerController extends Controller
     public static function crawlerTotal()
     {
         try{
-            
+
             $company = TransactionInfo::COMPANY;
             $url = "https://fubon-ebrokerdj.fbs.com.tw/Z/ZG/ZGB/ZGB.djhtm";
             $response = Http::get($url);
@@ -162,7 +168,7 @@ class CrawlerController extends Controller
                         $data['type'] = $data['diff'] > 0?'buy':'sell';
                         continue;
                     }
-                    
+
                 }
                 $all_data[] = $data;
             }
