@@ -13,7 +13,7 @@ class CrawlerController extends Controller
 {
     public function index()
     {
-        return self::stockOHLCV(20210714);
+        return self::stockOHLCV(20210907);
         return self::crawlerTotal();
         return self::crawler();
     }
@@ -126,7 +126,7 @@ class CrawlerController extends Controller
             $count = StockInfo::where('date',$date)->count();
             if($count > 0)
             {
-                return '今日資料已寫入!';
+                return $date.'日資料已寫入!';
             }
 
             $url = "https://www.twse.com.tw/exchangeReport/MI_INDEX?response=html&date=".$date."&type=ALLBUT0999";
@@ -174,9 +174,11 @@ class CrawlerController extends Controller
             }
             if(count($all_data) > 0){
                 StockInfo::insert($all_data);
-                return '寫入成功';
+                sleep(10);
+                return $date.'寫入成功';
             }else{
-                return '今日無資料';
+                sleep(5);
+                return $date.'今日無資料';
             }
         }
         catch (RequestException $ex)

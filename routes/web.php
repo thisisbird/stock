@@ -18,3 +18,4 @@ Route::get('/', function () {
 });
 
 Route::get('/crawler', '\App\Http\Controllers\CrawlerController@index');
+Route::get('/stock', '\App\Http\Controllers\StockController@index');
