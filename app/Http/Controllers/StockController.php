@@ -56,4 +56,8 @@ class StockController extends Controller
         }
         return array_sum($this->ma_temp[$count])/$count;
     }
+
+    public function kline(){
+        return view('kline');
+    }
 }
