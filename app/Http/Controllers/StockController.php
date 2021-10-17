@@ -7,7 +7,6 @@ use App\Models\StockInfo;
 class StockController extends Controller
 {
     public $ma_temp = [];
-    
     public function index()
     {
         $all_stocks = StockInfo::pluck('stock_name','stock_code');
