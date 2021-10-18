@@ -38,8 +38,9 @@ class Stock extends Command
      */
     public function handle()
     {
+        $strat = '2021-06-02';
         for ($i=0; $i < 100; $i++) { 
-            $date = date('Ymd',strtotime("-{$i} days"));
+            $date = date('Ymd',strtotime($strat." -{$i} days"));
             $info = CrawlerController::stockOHLCV($date);
             $this->info($info);
         }

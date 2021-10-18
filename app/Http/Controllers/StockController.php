@@ -56,7 +56,22 @@ class StockController extends Controller
         return array_sum($this->ma_temp[$count])/$count;
     }
 
+    function oneStockKlineInfo($code){
+        $stock_infos = StockInfo::where('stock_code',$code)->orderBy('date')->get();
+        $data= [];
+        $volume = [];
+        foreach ($stock_infos as $stock_info) {
+            $data[] = ['x'=>$stock_info->date,'y'=>[$stock_info->open,$stock_info->high,$stock_info->low,$stock_info->close]];
+            $volume[] = ['x'=>$stock_info->date,'y'=>$stock_info->vol2/1000000];
+        }
+        $info['kline'] = $data;
+        $info['volume'] = $volume;
+        return $info;
+    }
+
+
     public function kline(){
-        return view('kline');
+        $info = $this->oneStockKlineInfo(2330);
+        return view('kline',compact('info'));
     }
 }
